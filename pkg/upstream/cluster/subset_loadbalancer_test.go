@@ -24,6 +24,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"mosn.io/api"
 	"mosn.io/mosn/pkg/config/v2"
 	"mosn.io/mosn/pkg/types"
@@ -395,10 +396,6 @@ func TestFallbackWithDefaultSubset(t *testing.T) {
 			expectedHost: "e7",
 		},
 		{
-			ctx:          newMockLbContext(nil),
-			expectedHost: "e7",
-		},
-		{
 			ctx:          newMockLbContext(map[string]string{}),
 			expectedHost: "e7",
 		},
@@ -713,6 +710,48 @@ func TestDynamicSubsetHost(t *testing.T) {
 		result.RangeSubsetMap("", lb.subSets)
 		if !resultMapEqual(result.result, expectedResult) {
 			t.Fatal("create subset is not expected", result.result)
+		}
+	}
+
+}
+
+func TestNoFallbackWithEmpty(t *testing.T) {
+	// allback policy is no fallback
+	// but empty meta data can be used as any point fallback
+	ps := createHostset(exampleHostConfigs())
+	cfg := exampleSubsetConfig()
+	cfg.FallBackPolicy = uint8(types.NoFallBack) // NoFallBack
+	lb := newSubsetLoadBalancer(types.RoundRobin, ps, newClusterStats("TestNewSubsetChooseHost"), NewLBSubsetInfo(cfg))
+
+	cases := []struct {
+		ctx   types.LoadBalancerContext
+		hosts int
+	}{
+		{
+			ctx:   newMockLbContext(map[string]string{"stage": "prod", "version": "1.0"}),
+			hosts: 3,
+		},
+		{
+			ctx:   newMockLbContext(map[string]string{"stage": "prod"}),
+			hosts: 0,
+		},
+		{
+			ctx:   newMockLbContext(nil),
+			hosts: 7, // all hosts
+		},
+	}
+	for _, c := range cases {
+		hnum := lb.HostNum(c.ctx.MetadataMatchCriteria())
+		require.Equal(t, c.hosts, hnum)
+		for i := 0; i < 7; i++ {
+			h := lb.ChooseHost(c.ctx)
+			if c.hosts > 0 {
+				require.True(t, lb.IsExistsHosts(c.ctx.MetadataMatchCriteria()))
+				require.NotNil(t, h)
+			} else {
+				require.False(t, lb.IsExistsHosts(c.ctx.MetadataMatchCriteria()))
+				require.Nil(t, h)
+			}
 		}
 	}
 

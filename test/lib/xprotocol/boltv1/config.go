@@ -66,7 +66,7 @@ type Condition struct {
 	// which will be ingored.
 	ExpectedHeader map[string]string `json:"expected_header"`
 	// If a request contains the unexpected header, matched failed.
-	UnexpectedHeaderKey []string
+	UnexpectedHeaderKey []string `json:"unexpected_header_key"`
 	// TODO: Add more condition
 }
 

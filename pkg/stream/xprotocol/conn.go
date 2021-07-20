@@ -298,7 +298,10 @@ func (sc *streamConn) handleRequest(ctx context.Context, frame api.XFrame, onewa
 	}
 
 	// inject timeout
-	variable.SetString(ctx, types.VarProxyGlobalTimeout, strconv.Itoa(int(frame.GetTimeout())))
+	// if Timeout is zero, do not set the variable, which makes route timeout config can be activated
+	if frame.GetTimeout() != 0 {
+		variable.SetString(ctx, types.VarProxyGlobalTimeout, strconv.Itoa(int(frame.GetTimeout())))
+	}
 
 	// 3. create server stream
 	serverStream := sc.newServerStream(ctx, frame)
