@@ -111,6 +111,7 @@ func NewClusterManagerSingleton(clusters []v2.Cluster, clusterMap map[string][]v
 	return clusterManagerInstance
 }
 
+
 // AddOrUpdatePrimaryCluster will always create a new cluster without the hosts config
 // if the same name cluster is already exists, we will keep the exists hosts.
 func (cm *clusterManager) AddOrUpdatePrimaryCluster(cluster v2.Cluster) error {
@@ -232,6 +233,21 @@ func (cm *clusterManager) AppendClusterHosts(clusterName string, hostConfigs []v
 		hosts = append(hosts, NewSimpleHost(hc, snap.ClusterInfo()))
 	}
 	hosts = append(hosts, snap.HostSet().Hosts()...)
+	c.UpdateHosts(hosts)
+	refreshHostsConfig(c)
+	return nil
+}
+
+// AppendClusterTypesHosts used to adds new hosts into cluster by passing `types.Host`
+func (cm *clusterManager) AppendClusterTypesHosts(clusterName string, typesHost []types.Host) error {
+	ci, ok := cm.clustersMap.Load(clusterName)
+	if !ok {
+		log.DefaultLogger.Errorf("[upstream] [cluster manager] AppendClusterHosts cluster %s not found", clusterName)
+		return fmt.Errorf("cluster %s is not exists", clusterName)
+	}
+	c := ci.(types.Cluster)
+	snap := c.Snapshot()
+	hosts := append(snap.HostSet().Hosts(), typesHost...)
 	c.UpdateHosts(hosts)
 	refreshHostsConfig(c)
 	return nil

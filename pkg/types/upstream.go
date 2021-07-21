@@ -54,6 +54,9 @@ type ClusterManager interface {
 	// AppendClusterHosts used to add cluster's hosts
 	AppendClusterHosts(clusterName string, hostConfigs []v2.Host) error
 
+	// AppendClusterTypesHosts used to add cluster's by passing the `types.Host` type
+	AppendClusterTypesHosts(clusterName string, typesHost []Host) error
+
 	// Get or Create tcp conn pool for a cluster
 	TCPConnForCluster(balancerContext LoadBalancerContext, snapshot ClusterSnapshot) CreateConnectionData
 

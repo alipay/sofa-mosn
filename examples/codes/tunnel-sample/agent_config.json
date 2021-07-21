@@ -1,0 +1,74 @@
+{
+  "close_graceful": true,
+  "servers": [
+    {
+      "default_log_path": "stdout",
+      "default_log_level": "DEBUG",
+      "routers":[
+        {
+          "router_config_name":"server_router",
+          "virtual_hosts":[{
+            "name":"serverHost",
+            "domains": ["*"],
+            "routers": [
+              {
+                "match":{"headers":[{"name":"service","value":".*"}]},
+                "route":{"cluster_name":"serverCluster"}
+              }
+            ]
+          }]
+        }
+      ],
+      "listeners":[
+        {
+          "name":"serverListener",
+          "address": "127.0.0.1:2046",
+          "bind_port": true,
+          "filter_chains": [{
+            "filters": [
+              {
+                "type": "proxy",
+                "config": {
+                  "downstream_protocol": "X",
+                  "upstream_protocol": "X",
+                  "extend_config": {
+                    "sub_protocol": "bolt"
+                  },
+                  "router_config_name":"server_router"
+                }
+              }
+            ]
+          }]
+        }
+      ]
+    }
+  ],
+  "extends": [
+    {
+      "type": "tunnel_agent",
+      "config": {
+        "hosting_listener": "serverListener",
+        "server_list": ["127.0.0.1:9999"],
+        "cluster": "clientCluster",
+        "enable": true,
+        "connection_num": 1
+      }
+    }
+  ],
+  "cluster_manager": {
+    "clusters": [
+      {
+        "Name": "serverCluster",
+        "type": "SIMPLE",
+        "lb_type": "LB_RANDOM",
+        "max_request_per_conn": 1024,
+        "conn_buffer_limit_bytes": 32768,
+        "hosts": [
+          {
+            "address": "127.0.0.1:8080"
+          }
+        ]
+      }
+    ]
+  }
+}

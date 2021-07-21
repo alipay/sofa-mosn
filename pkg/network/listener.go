@@ -325,7 +325,7 @@ func (l *listener) accept(lctx context.Context) error {
 
 	// TODO: use thread pool
 	utils.GoWithRecover(func() {
-		l.cb.OnAccept(rawc, l.useOriginalDst, nil, nil, nil)
+		l.cb.OnAccept(rawc, l.useOriginalDst, nil, nil, nil, nil)
 	}, nil)
 
 	return nil

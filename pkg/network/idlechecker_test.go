@@ -35,7 +35,7 @@ type mockHandler struct {
 	stopChan chan struct{}
 }
 
-func (h *mockHandler) OnAccept(rawc net.Conn, handOffRestoredDestinationConnections bool, oriRemoteAddr net.Addr, c chan api.Connection, buf []byte) {
+func (h *mockHandler) OnAccept(rawc net.Conn, useOriginalDst bool, oriRemoteAddr net.Addr, c chan api.Connection, buf []byte, listeners []api.ConnectionEventListener) {
 	ctx := context.Background()
 	conn := NewServerConnection(ctx, rawc, h.stopChan)
 	conn.SetIdleTimeout(buffer.ConnReadTimeout, 3*time.Second)

@@ -1,0 +1,74 @@
+{
+  "close_graceful": true,
+  "servers": [
+    {
+      "default_log_path": "stdout",
+      "default_log_level": "DEBUG",
+      "routers":[
+        {
+          "router_config_name":"client_router",
+          "virtual_hosts":[{
+            "name":"clientHost",
+            "domains": ["*"],
+            "routers": [
+              {
+                "match":{"headers":[{"name":"service","value":".*"}]},
+                "route":{"cluster_name":"clientCluster"}
+              }
+            ]
+          }]
+        }
+      ],
+      "listeners": [
+        {
+          "name":"clientListener",
+          "address": "127.0.0.1:2045",
+          "bind_port": true,
+          "filter_chains": [{
+            "filters": [
+              {
+                "type": "proxy",
+                "config": {
+                  "downstream_protocol": "X",
+                  "upstream_protocol": "X",
+                  "extend_config": {
+                    "sub_protocol": "bolt"
+                  },
+                  "router_config_name":"client_router"
+                }
+              }
+            ]
+          }]
+        },
+        {
+          "name": "tunnel_server_listener",
+          "address": "127.0.0.1:9999",
+          "bind_port": true,
+          "connection_idle_timeout":0,
+          "log_path": "stdout",
+          "filter_chains": [
+            {
+              "tls_context": {},
+              "filters": [
+                {
+                  "type": "tunnel"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cluster_manager": {
+    "clusters": [
+      {
+        "Name": "clientCluster",
+        "type": "SIMPLE",
+        "lb_type": "LB_RANDOM",
+        "max_request_per_conn": 1024,
+        "conn_buffer_limit_bytes": 32768
+      }
+    ]
+  }
+}

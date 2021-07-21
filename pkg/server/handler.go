@@ -406,7 +406,7 @@ func (al *activeListener) GoStart(lctx context.Context) {
 }
 
 // ListenerEventListener
-func (al *activeListener) OnAccept(rawc net.Conn, useOriginalDst bool, oriRemoteAddr net.Addr, ch chan api.Connection, buf []byte) {
+func (al *activeListener) OnAccept(rawc net.Conn, useOriginalDst bool, oriRemoteAddr net.Addr, ch chan api.Connection, buf []byte, listeners []api.ConnectionEventListener) {
 	var rawf *os.File
 
 	// only store fd and tls conn handshake in final working listener
@@ -473,6 +473,10 @@ func (al *activeListener) OnAccept(rawc net.Conn, useOriginalDst bool, oriRemote
 	}
 	if oriRemoteAddr != nil {
 		ctx = mosnctx.WithValue(ctx, types.ContextOriRemoteAddr, oriRemoteAddr)
+	}
+
+	if len(listeners) != 0 {
+		ctx = mosnctx.WithValue(ctx, types.ContextKeyConnectionEventListeners, listeners)
 	}
 
 	arc.ctx = ctx
@@ -601,6 +605,12 @@ func (al *activeListener) newConnection(ctx context.Context, rawc net.Conn) {
 	if oriRemoteAddr != nil {
 		conn.SetRemoteAddr(oriRemoteAddr.(net.Addr))
 	}
+	listeners := mosnctx.Get(ctx, types.ContextKeyConnectionEventListeners)
+	if listeners != nil {
+		for _, listener := range listeners.([]api.ConnectionEventListener) {
+			conn.AddConnectionEventListener(listener)
+		}
+	}
 	newCtx := mosnctx.WithValue(ctx, types.ContextKeyConnectionID, conn.ID())
 	newCtx = mosnctx.WithValue(newCtx, types.ContextKeyConnection, conn)
 
@@ -669,7 +679,7 @@ func (arc *activeRawConn) UseOriginalDst(ctx context.Context) {
 		if log.DefaultLogger.GetLogLevel() >= log.INFO {
 			log.DefaultLogger.Infof("[server] [conn] original dst:%s:%d", listener.listenIP, listener.listenPort)
 		}
-		listener.OnAccept(arc.rawc, false, arc.oriRemoteAddr, ch, buf)
+		listener.OnAccept(arc.rawc, false, arc.oriRemoteAddr, ch, buf, nil)
 	}
 
 	if localListener != nil {
@@ -677,7 +687,7 @@ func (arc *activeRawConn) UseOriginalDst(ctx context.Context) {
 		if log.DefaultLogger.GetLogLevel() >= log.INFO {
 			log.DefaultLogger.Infof("[server] [conn] original dst:%s:%d", localListener.listenIP, localListener.listenPort)
 		}
-		localListener.OnAccept(arc.rawc, false, arc.oriRemoteAddr, ch, buf)
+		localListener.OnAccept(arc.rawc, false, arc.oriRemoteAddr, ch, buf, nil)
 	}
 
 	// If it can’t find any matching listeners and should using the self listener.
@@ -685,7 +695,7 @@ func (arc *activeRawConn) UseOriginalDst(ctx context.Context) {
 		if log.DefaultLogger.GetLogLevel() >= log.INFO {
 			log.DefaultLogger.Infof("[server] [conn] original dst:%s:%d", arc.activeListener.listenIP, arc.activeListener.listenPort)
 		}
-		arc.activeListener.OnAccept(arc.rawc, false, arc.oriRemoteAddr, ch, buf)
+		arc.activeListener.OnAccept(arc.rawc, false, arc.oriRemoteAddr, ch, buf, nil)
 	}
 }
 

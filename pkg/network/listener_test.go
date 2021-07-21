@@ -43,7 +43,7 @@ func (e *mockEventListener) SetRecvStatus(state bool) {
 	e.recvStatus = state
 }
 
-func (e *mockEventListener) OnAccept(rawc net.Conn, useOriginalDst bool, oriRemoteAddr net.Addr, c chan api.Connection, buf []byte) {
+func (e *mockEventListener) OnAccept(rawc net.Conn, useOriginalDst bool, oriRemoteAddr net.Addr, c chan api.Connection, buf []byte, listeners []api.ConnectionEventListener) {
 	e.recvStatus = true
 	rawc.Close()
 }

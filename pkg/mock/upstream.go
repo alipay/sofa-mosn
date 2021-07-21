@@ -6,14 +6,13 @@ package mock
 
 import (
 	context "context"
-	net "net"
-	reflect "reflect"
-	time "time"
-
 	gomock "github.com/golang/mock/gomock"
 	api "mosn.io/api"
 	v2 "mosn.io/mosn/pkg/config/v2"
 	types "mosn.io/mosn/pkg/types"
+	net "net"
+	reflect "reflect"
+	time "time"
 )
 
 // MockClusterManager is a mock of ClusterManager interface
@@ -119,6 +118,20 @@ func (m *MockClusterManager) AppendClusterHosts(clusterName string, hostConfigs 
 func (mr *MockClusterManagerMockRecorder) AppendClusterHosts(clusterName, hostConfigs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppendClusterHosts", reflect.TypeOf((*MockClusterManager)(nil).AppendClusterHosts), clusterName, hostConfigs)
+}
+
+// AppendClusterTypesHosts mocks base method
+func (m *MockClusterManager) AppendClusterTypesHosts(clusterName string, typesHost []types.Host) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AppendClusterTypesHosts", clusterName, typesHost)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AppendClusterTypesHosts indicates an expected call of AppendClusterTypesHosts
+func (mr *MockClusterManagerMockRecorder) AppendClusterTypesHosts(clusterName, typesHost interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppendClusterTypesHosts", reflect.TypeOf((*MockClusterManager)(nil).AppendClusterTypesHosts), clusterName, typesHost)
 }
 
 // TCPConnForCluster mocks base method

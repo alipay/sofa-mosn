@@ -80,7 +80,7 @@ func readMsgLoop(lctx context.Context, l *listener) {
 			fd, _ := conn.File()
 			clientConn, _ := net.FilePacketConn(fd)
 
-			l.cb.OnAccept(clientConn.(*net.UDPConn), l.useOriginalDst, rAddr, nil, buf.Bytes()[0:n])
+			l.cb.OnAccept(clientConn.(*net.UDPConn), l.useOriginalDst, rAddr, nil, buf.Bytes()[0:n], nil)
 		} else {
 			c := dc.(api.Connection)
 			c.OnRead(buf)

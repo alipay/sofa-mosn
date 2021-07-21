@@ -30,6 +30,7 @@ import (
 	_ "mosn.io/mosn/pkg/filter/network/grpc"
 	_ "mosn.io/mosn/pkg/filter/network/proxy"
 	_ "mosn.io/mosn/pkg/filter/network/streamproxy"
+	_ "mosn.io/mosn/pkg/filter/network/tunnel"
 	_ "mosn.io/mosn/pkg/filter/stream/dsl"
 	_ "mosn.io/mosn/pkg/filter/stream/dubbo"
 	_ "mosn.io/mosn/pkg/filter/stream/faultinject"

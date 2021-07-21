@@ -26,6 +26,7 @@ import (
 	"mosn.io/mosn/pkg/log"
 )
 
+var MOSND *Mosn
 // Data contains objects used in stages
 type Data struct {
 	// ctx contains the start parameters
@@ -109,6 +110,7 @@ func (stm *StageManager) runInitStage() time.Duration {
 	}
 	// after all registered stages are completed, call the last process: new mosn
 	stm.data.mosn = stm.newMosn(stm.data.config)
+	MOSND = stm.data.mosn
 	return time.Since(st)
 }
 
